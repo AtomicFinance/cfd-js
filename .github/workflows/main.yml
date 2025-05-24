@@ -15,7 +15,9 @@ jobs:
   build-ubuntu:
     name: cmake-js build (ubuntu)
     runs-on: ubuntu-22.04
-    container: node:18
+    container:
+      image: node:18
+      options: --user root
     timeout-minutes: 50
     steps:
     - uses: actions/checkout@v2
@@ -280,4 +282,4 @@ jobs:
         npm ci
         npm run cmake_release_parallel
     - name: Perform CodeQL Analysis
-      uses: github/codeql-action/analyze@v3 
+      uses: github/codeql-action/analyze@v3
