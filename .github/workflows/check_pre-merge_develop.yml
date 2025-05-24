@@ -23,9 +23,15 @@ jobs:
   build-ubuntu:
     name: cmake-js build (ubuntu)
     runs-on: ubuntu-22.04
+    container: node:18-bullseye
     timeout-minutes: 50
     steps:
     - uses: actions/checkout@v2
+    - name: install cmake and build tools
+      run: |
+        apt-get update -y
+        apt-get install -y cmake build-essential
+        cmake --version
     - uses: actions/setup-node@v2
       timeout-minutes: 1
       with:
