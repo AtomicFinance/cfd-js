@@ -21,6 +21,12 @@ jobs:
     timeout-minutes: 50
     steps:
     - uses: actions/checkout@v2
+    - name: Fix workspace permissions
+      run: |
+        chown -R root:root $GITHUB_WORKSPACE
+        chmod -R 755 $GITHUB_WORKSPACE
+        mkdir -p external
+        chmod 755 external
     - name: Setup cmake
       uses: jwlawson/actions-setup-cmake@v2.0.2
       with:
