@@ -30,7 +30,7 @@ jobs:
     - name: Setup cmake
       uses: jwlawson/actions-setup-cmake@v2.0.2
       with:
-        cmake-version: 'latest'
+        cmake-version: '3.22.6'
     - uses: actions/setup-node@v2
       timeout-minutes: 1
       with:
