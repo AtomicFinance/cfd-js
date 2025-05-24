@@ -1,8 +1,6 @@
 name: main
 
-on: 
-  push:
-  pull_request:
+on: [push]
 
 env:
   CMAKE_BUILD_PARALLEL_LEVEL: 4
