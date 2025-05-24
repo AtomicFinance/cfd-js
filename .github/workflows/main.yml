@@ -1,13 +1,8 @@
-name: sprint pre-merge check
+name: main
 
 on: 
   push:
-    branches:
-    - features/sprint*
-    - feature/ci-*
   pull_request:
-    branches:
-    - features/sprint*
 
 env:
   CMAKE_BUILD_PARALLEL_LEVEL: 4
@@ -26,10 +21,14 @@ jobs:
     timeout-minutes: 50
     steps:
     - uses: actions/checkout@v2
+    - name: Setup cmake
+      uses: jwlawson/actions-setup-cmake@v2.0.2
+      with:
+        cmake-version: 'latest'
     - uses: actions/setup-node@v2
       timeout-minutes: 1
       with:
-        node-version: 14
+        node-version: 18
     - name: update to npm v8
       run: npm i -g npm@8
     - name: dump node version
@@ -44,8 +43,8 @@ jobs:
       id: node_cache
       with:
         path: node_modules
-        key: node-${{ runner.os }}-${{ matrix.node }}-${{ steps.node_ver.outputs.node_version }}-${{ hashFiles('**/package-lock.json') }}-0
-        restore-keys: node-${{ runner.os }}-${{ matrix.node }}-${{ steps.node_ver.outputs.node_version }}-${{ hashFiles('**/package-lock.json') }}-
+        key: node-${{ runner.os }}-18-${{ steps.node_ver.outputs.node_version }}-${{ hashFiles('**/package-lock.json') }}-0
+        restore-keys: node-${{ runner.os }}-18-${{ steps.node_ver.outputs.node_version }}-${{ hashFiles('**/package-lock.json') }}-
     - name: npm info
       if: steps.node_cache.outputs.cache-hit != 'true'
       id: npm_info
@@ -58,9 +57,9 @@ jobs:
       id: npm_cache
       with:
         path: ${{ steps.npm_info.outputs.temp_npm_cachedir }}
-        key: npm-${{ runner.os }}-${{ matrix.node }}-${{ steps.node_ver.outputs.node_version }}-0
+        key: npm-${{ runner.os }}-18-${{ steps.node_ver.outputs.node_version }}-0
         restore-keys: |
-          npm-${{ runner.os }}-${{ matrix.node }}-${{ steps.node_ver.outputs.node_version }}-
+          npm-${{ runner.os }}-18-${{ steps.node_ver.outputs.node_version }}-
     - name: npm_install
       if: steps.node_cache.outputs.cache-hit != 'true'
       env:
@@ -69,7 +68,6 @@ jobs:
         npm set progress=false
         npm ci
     - name: build
-      if: steps.node_cache.outputs.cache-hit == 'true'
       run: npm run cmake_release_parallel
     - name: test_all
       run: npm run test
@@ -94,7 +92,7 @@ jobs:
     - uses: actions/setup-node@v2
       timeout-minutes: 1
       with:
-        node-version: 14
+        node-version: 18
     - name: update to npm v8
       run: npm i -g npm@8
     - name: dump node version
@@ -109,8 +107,8 @@ jobs:
       id: node_cache
       with:
         path: node_modules
-        key: node-${{ runner.os }}-${{ matrix.node }}-${{ steps.node_ver.outputs.node_version }}-${{ hashFiles('**/package-lock.json') }}-0
-        restore-keys: node-${{ runner.os }}-${{ matrix.node }}-${{ steps.node_ver.outputs.node_version }}-${{ hashFiles('**/package-lock.json') }}-
+        key: node-${{ runner.os }}-18-${{ steps.node_ver.outputs.node_version }}-${{ hashFiles('**/package-lock.json') }}-0
+        restore-keys: node-${{ runner.os }}-18-${{ steps.node_ver.outputs.node_version }}-${{ hashFiles('**/package-lock.json') }}-
     - name: npm info
       if: steps.node_cache.outputs.cache-hit != 'true'
       id: npm_info
@@ -123,9 +121,9 @@ jobs:
       id: npm_cache
       with:
         path: ${{ steps.npm_info.outputs.temp_npm_cachedir }}
-        key: npm-${{ runner.os }}-${{ matrix.node }}-${{ steps.node_ver.outputs.node_version }}-0
+        key: npm-${{ runner.os }}-18-${{ steps.node_ver.outputs.node_version }}-0
         restore-keys: |
-          npm-${{ runner.os }}-${{ matrix.node }}-${{ steps.node_ver.outputs.node_version }}-
+          npm-${{ runner.os }}-18-${{ steps.node_ver.outputs.node_version }}-
     - name: npm_install
       if: steps.node_cache.outputs.cache-hit != 'true'
       env:
@@ -159,7 +157,7 @@ jobs:
     - uses: actions/setup-node@v2
       timeout-minutes: 1
       with:
-        node-version: 14
+        node-version: 18
     - name: update to npm v8
       run: npm i -g npm@8
     - name: dump node version
@@ -174,8 +172,8 @@ jobs:
       id: node_cache
       with:
         path: node_modules
-        key: node-${{ runner.os }}-${{ matrix.node }}-${{ steps.node_ver.outputs.node_version }}-${{ hashFiles('**/package-lock.json') }}-0
-        restore-keys: node-${{ runner.os }}-${{ matrix.node }}-${{ steps.node_ver.outputs.node_version }}-${{ hashFiles('**/package-lock.json') }}-
+        key: node-${{ runner.os }}-18-${{ steps.node_ver.outputs.node_version }}-${{ hashFiles('**/package-lock.json') }}-0
+        restore-keys: node-${{ runner.os }}-18-${{ steps.node_ver.outputs.node_version }}-${{ hashFiles('**/package-lock.json') }}-
     - name: npm info
       if: steps.node_cache.outputs.cache-hit != 'true'
       id: npm_info
@@ -188,9 +186,9 @@ jobs:
       id: npm_cache
       with:
         path: ${{ steps.npm_info.outputs.temp_npm_cachedir }}
-        key: npm-${{ runner.os }}-${{ matrix.node }}-${{ steps.node_ver.outputs.node_version }}-0
+        key: npm-${{ runner.os }}-18-${{ steps.node_ver.outputs.node_version }}-0
         restore-keys: |
-          npm-${{ runner.os }}-${{ matrix.node }}-${{ steps.node_ver.outputs.node_version }}-
+          npm-${{ runner.os }}-18-${{ steps.node_ver.outputs.node_version }}-
     - name: npm_install
       if: steps.node_cache.outputs.cache-hit != 'true'
       env:
@@ -218,7 +216,6 @@ jobs:
   bitcoin-e2e-test:
     name: bitcoin e2e test
     runs-on: ubuntu-22.04
-
     steps:
     - name: checkout
       uses: actions/checkout@v2
@@ -233,7 +230,6 @@ jobs:
   elements-e2e-test:
     name: elements e2e test
     runs-on: ubuntu-22.04
-
     steps:
     - name: checkout
       uses: actions/checkout@v2
@@ -248,7 +244,6 @@ jobs:
   doxygen-ubuntu:
     name: doxygen-ubuntu
     runs-on: ubuntu-22.04
-
     steps:
     - uses: actions/checkout@v2
     - name: install_doxygen
@@ -257,3 +252,34 @@ jobs:
       run: |
         cd doc
         doxygen Doxyfile_quiet_all
+
+  analyze-CodeQL:
+    name: CodeQL
+    runs-on: ubuntu-22.04
+    timeout-minutes: 360
+    strategy:
+      fail-fast: false
+      matrix:
+        language: ['cpp', 'javascript']
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 2
+    - name: Initialize CodeQL
+      uses: github/codeql-action/init@v3
+      with:
+        languages: ${{ matrix.language }}
+    - name: Autobuild
+      if: matrix.language == 'javascript'
+      uses: github/codeql-action/autobuild@v3
+    - name: Manual Build
+      if: matrix.language != 'javascript'
+      env:
+        CFDJS_UNUSE_ASSET: true
+      run: |
+        npm set progress=false
+        npm ci
+        npm run cmake_release_parallel
+    - name: Perform CodeQL Analysis
+      uses: github/codeql-action/analyze@v3 
