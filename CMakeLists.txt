@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.13)
+cmake_minimum_required(VERSION 3.15)
 
 # configure.ac: AC_INIT([cfd-js], [1.0]
 set(PACKAGE_VERSION_p2pderivatives   0.0.4)
