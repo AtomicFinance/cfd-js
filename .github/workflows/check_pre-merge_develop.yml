@@ -27,10 +27,14 @@ jobs:
     timeout-minutes: 50
     steps:
     - uses: actions/checkout@v2
+    - name: install cmake
+      run: |
+        apt-get update
+        apt-get install -y cmake build-essential
     - uses: actions/setup-node@v2
       timeout-minutes: 1
       with:
-        node-version: ${{ matrix.node }}
+        node-version: 18
     - name: update to npm v8
       run: npm i -g npm@8
     - name: dump node version
@@ -45,8 +49,8 @@ jobs:
       id: node_cache
       with:
         path: node_modules
-        key: node-${{ runner.os }}-${{ matrix.node }}-${{ steps.node_ver.outputs.node_version }}-${{ hashFiles('**/package-lock.json') }}-0
-        restore-keys: node-${{ runner.os }}-${{ matrix.node }}-${{ steps.node_ver.outputs.node_version }}-${{ hashFiles('**/package-lock.json') }}-
+        key: node-${{ runner.os }}-18-${{ steps.node_ver.outputs.node_version }}-${{ hashFiles('**/package-lock.json') }}-0
+        restore-keys: node-${{ runner.os }}-18-${{ steps.node_ver.outputs.node_version }}-${{ hashFiles('**/package-lock.json') }}-
     - name: npm info
       if: steps.node_cache.outputs.cache-hit != 'true'
       id: npm_info
@@ -59,9 +63,9 @@ jobs:
       id: npm_cache
       with:
         path: ${{ steps.npm_info.outputs.temp_npm_cachedir }}
-        key: npm-${{ runner.os }}-${{ matrix.node }}-${{ steps.node_ver.outputs.node_version }}-0
+        key: npm-${{ runner.os }}-18-${{ steps.node_ver.outputs.node_version }}-0
         restore-keys: |
-          npm-${{ runner.os }}-${{ matrix.node }}-${{ steps.node_ver.outputs.node_version }}-
+          npm-${{ runner.os }}-18-${{ steps.node_ver.outputs.node_version }}-
     - name: npm_install
       if: steps.node_cache.outputs.cache-hit != 'true'
       env:
@@ -95,7 +99,7 @@ jobs:
     - uses: actions/setup-node@v2
       timeout-minutes: 1
       with:
-        node-version: ${{ matrix.node }}
+        node-version: 18
     - name: update to npm v8
       run: npm i -g npm@8
     - name: dump node version
@@ -110,8 +114,8 @@ jobs:
       id: node_cache
       with:
         path: node_modules
-        key: node-${{ runner.os }}-${{ matrix.node }}-${{ steps.node_ver.outputs.node_version }}-${{ hashFiles('**/package-lock.json') }}-0
-        restore-keys: node-${{ runner.os }}-${{ matrix.node }}-${{ steps.node_ver.outputs.node_version }}-${{ hashFiles('**/package-lock.json') }}-
+        key: node-${{ runner.os }}-18-${{ steps.node_ver.outputs.node_version }}-${{ hashFiles('**/package-lock.json') }}-0
+        restore-keys: node-${{ runner.os }}-18-${{ steps.node_ver.outputs.node_version }}-${{ hashFiles('**/package-lock.json') }}-
     - name: npm info
       if: steps.node_cache.outputs.cache-hit != 'true'
       id: npm_info
@@ -124,9 +128,9 @@ jobs:
       id: npm_cache
       with:
         path: ${{ steps.npm_info.outputs.temp_npm_cachedir }}
-        key: npm-${{ runner.os }}-${{ matrix.node }}-${{ steps.node_ver.outputs.node_version }}-0
+        key: npm-${{ runner.os }}-18-${{ steps.node_ver.outputs.node_version }}-0
         restore-keys: |
-          npm-${{ runner.os }}-${{ matrix.node }}-${{ steps.node_ver.outputs.node_version }}-
+          npm-${{ runner.os }}-18-${{ steps.node_ver.outputs.node_version }}-
     - name: npm_install
       if: steps.node_cache.outputs.cache-hit != 'true'
       env:
@@ -160,7 +164,7 @@ jobs:
     - uses: actions/setup-node@v2
       timeout-minutes: 1
       with:
-        node-version: ${{ matrix.node }}
+        node-version: 18
     - name: update to npm v8
       run: npm i -g npm@8
     - name: dump node version
@@ -175,8 +179,8 @@ jobs:
       id: node_cache
       with:
         path: node_modules
-        key: node-${{ runner.os }}-${{ matrix.node }}-${{ steps.node_ver.outputs.node_version }}-${{ hashFiles('**/package-lock.json') }}-0
-        restore-keys: node-${{ runner.os }}-${{ matrix.node }}-${{ steps.node_ver.outputs.node_version }}-${{ hashFiles('**/package-lock.json') }}-
+        key: node-${{ runner.os }}-18-${{ steps.node_ver.outputs.node_version }}-${{ hashFiles('**/package-lock.json') }}-0
+        restore-keys: node-${{ runner.os }}-18-${{ steps.node_ver.outputs.node_version }}-${{ hashFiles('**/package-lock.json') }}-
     - name: npm info
       if: steps.node_cache.outputs.cache-hit != 'true'
       id: npm_info
@@ -189,9 +193,9 @@ jobs:
       id: npm_cache
       with:
         path: ${{ steps.npm_info.outputs.temp_npm_cachedir }}
-        key: npm-${{ runner.os }}-${{ matrix.node }}-${{ steps.node_ver.outputs.node_version }}-0
+        key: npm-${{ runner.os }}-18-${{ steps.node_ver.outputs.node_version }}-0
         restore-keys: |
-          npm-${{ runner.os }}-${{ matrix.node }}-${{ steps.node_ver.outputs.node_version }}-
+          npm-${{ runner.os }}-18-${{ steps.node_ver.outputs.node_version }}-
     - name: npm_install
       if: steps.node_cache.outputs.cache-hit != 'true'
       env:
