@@ -23,7 +23,6 @@ jobs:
   cmake-js-build:
     name: cmake-js build
     timeout-minutes: 50
-    runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         os: [macos-11, windows-2019, ubuntu-18.04]
@@ -33,6 +32,11 @@ jobs:
             node: 12
           - os: macos-11
             node: 17
+    runs-on: ${{ matrix.os }}
+    container: ${{ matrix.os == 'ubuntu-18.04' && 'node:18' || null }}
+    # For macos-11, use self-hosted runner
+    if: matrix.os == 'macos-11'
+    runs-on: [self-hosted, macos]
 
     steps:
     - uses: actions/checkout@v2
