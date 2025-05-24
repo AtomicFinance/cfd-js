@@ -23,14 +23,9 @@ jobs:
   build-ubuntu:
     name: cmake-js build (ubuntu)
     runs-on: ubuntu-22.04
-    container: node:18
     timeout-minutes: 50
     steps:
     - uses: actions/checkout@v2
-    - name: install cmake
-      run: |
-        apt-get update
-        apt-get install -y cmake build-essential
     - uses: actions/setup-node@v2
       timeout-minutes: 1
       with:
@@ -74,7 +69,6 @@ jobs:
         npm set progress=false
         npm ci
     - name: build
-      if: steps.node_cache.outputs.cache-hit == 'true'
       run: npm run cmake_release_parallel
     - name: test_all
       run: npm run test
