@@ -28,9 +28,15 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: Setup cmake
-      uses: jwlawson/actions-setup-cmake@v2
+      uses: jwlawson/actions-setup-cmake@v2.0.2
       with:
         cmake-version: 'latest'
+    - name: Verify cmake installation
+      run: |
+        echo "Checking cmake installation..."
+        which cmake || echo "cmake not found in PATH"
+        cmake --version || echo "cmake --version failed"
+        echo "PATH: $PATH"
     - uses: actions/setup-node@v2
       timeout-minutes: 1
       with:
@@ -44,30 +50,12 @@ jobs:
         echo "::set-output name=node_version::$node_ver"
         echo "node_version=$node_ver"
       shell: bash
-    - name: node_modules-useCache
-      uses: actions/cache@v4
-      id: node_cache
-      with:
-        path: node_modules
-        key: node-${{ runner.os }}-18-${{ steps.node_ver.outputs.node_version }}-${{ hashFiles('**/package-lock.json') }}-0
-        restore-keys: node-${{ runner.os }}-18-${{ steps.node_ver.outputs.node_version }}-${{ hashFiles('**/package-lock.json') }}-
     - name: npm info
-      if: steps.node_cache.outputs.cache-hit != 'true'
       id: npm_info
       run: |
         npm --version
         echo "::set-output name=temp_npm_cachedir::$(npm config get cache)"
-    - name: use npm cache
-      if: steps.node_cache.outputs.cache-hit != 'true'
-      uses: actions/cache@v4
-      id: npm_cache
-      with:
-        path: ${{ steps.npm_info.outputs.temp_npm_cachedir }}
-        key: npm-${{ runner.os }}-18-${{ steps.node_ver.outputs.node_version }}-0
-        restore-keys: |
-          npm-${{ runner.os }}-18-${{ steps.node_ver.outputs.node_version }}-
     - name: npm_install
-      if: steps.node_cache.outputs.cache-hit != 'true'
       env:
         CFDJS_UNUSE_ASSET: true
       run: |
