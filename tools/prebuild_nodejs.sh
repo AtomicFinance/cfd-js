@@ -3,6 +3,9 @@
 # Prebuild for Node.js runtime
 prebuild \
   --backend cmake-js \
+  -t 20.18.0 \
+  -t 18.18.2 \
+  -t 16.20.2 \
   -t 15.1.0 \
   -t 14.3.0 \
   -t 12.16.3 \
