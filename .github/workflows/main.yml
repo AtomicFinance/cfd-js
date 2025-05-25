@@ -231,7 +231,7 @@ jobs:
       run: docker pull ${{ env.GITHUB_DOCKER_IMAGE }}:${{ env.GITHUB_BITCOIN_VERSION }}
     - name: integration test
       run: |
-        docker run -v ${{ github.workspace }}:/github/workspace --entrypoint ${{ env.BITCOIN_ENTRYPOINT_PATH }} ${{ env.GITHUB_DOCKER_IMAGE }}:${{ env.GITHUB_BITCOIN_VERSION }}
+        docker run --user root -v ${{ github.workspace }}:/github/workspace --entrypoint ${{ env.BITCOIN_ENTRYPOINT_PATH }} ${{ env.GITHUB_DOCKER_IMAGE }}:${{ env.GITHUB_BITCOIN_VERSION }}
 
   elements-e2e-test:
     name: elements e2e test
@@ -245,7 +245,7 @@ jobs:
       run: docker pull ${{ env.GITHUB_DOCKER_IMAGE }}:${{ env.GITHUB_ELEMENTS_VERSION }}
     - name: integration test
       run: |
-        docker run -v ${{ github.workspace }}:/github/workspace --entrypoint ${{ env.ELEMENTS_ENTRYPOINT_PATH }} ${{ env.GITHUB_DOCKER_IMAGE }}:${{ env.GITHUB_ELEMENTS_VERSION }}
+        docker run --user root -v ${{ github.workspace }}:/github/workspace --entrypoint ${{ env.ELEMENTS_ENTRYPOINT_PATH }} ${{ env.GITHUB_DOCKER_IMAGE }}:${{ env.GITHUB_ELEMENTS_VERSION }}
 
   doxygen-ubuntu:
     name: doxygen-ubuntu
