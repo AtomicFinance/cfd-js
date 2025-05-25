@@ -6,21 +6,22 @@ on:
     - 'v*'
 
 env:
-  XCODE_VERSION: 10.3
+  CMAKE_BUILD_PARALLEL_LEVEL: 4
+  IMAGE_NODE_VERSION: 18
 
 jobs:
   create_releases:
     name: create-releases
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-22.04
     outputs:
       release_url: ${{ steps.output_url.outputs.upload_url }}
 
     steps:
     - name: checkout
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
     - name: Get the version
       id: get_version
-      run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
+      run: echo "VERSION=${GITHUB_REF/refs\/tags\//}" >> $GITHUB_OUTPUT
       shell: bash
     - name: check package.json version
       env:
@@ -28,50 +29,91 @@ jobs:
       run: node ./tools/checker.js version ${version}
     - name: Create Release
       id: create_release
-      uses: actions/create-release@v1
+      uses: softprops/action-gh-release@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         tag_name: ${{ github.ref }}
-        release_name: Release ${{ github.ref }}
+        name: Release ${{ github.ref }}
         body: |
           Changes in this Release
-          - First Change
-          - Second Change
+          - Fixed CI/CD pipeline issues
+          - Upgraded CMake minimum version requirement to 3.15
         draft: false
-        prerelease: true
+        prerelease: false
       continue-on-error: true
     - name: Get release
       if: steps.create_release.outcome == 'failure'
       id: get_release
-      uses: bruceadams/get-release@v1.2.0
+      uses: bruceadams/get-release@v1.3.2
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     - name: output url
       id: output_url
       run: |
-        echo "::set-output name=upload_url::${{steps.get_release.outputs.upload_url}}${{steps.create_release.outputs.upload_url}}"
+        echo "upload_url=${{steps.get_release.outputs.upload_url}}${{steps.create_release.outputs.upload_url}}" >> $GITHUB_OUTPUT
 
-  upload-object-windows-vs2019:
-    name: upload-object-win-vs2019
+  upload-object-windows:
+    name: upload-object-win
     needs: create_releases
     runs-on: windows-2019
+    timeout-minutes: 50
 
     steps:
     - name: checkout
-      uses: actions/checkout@v2
-    - uses: actions/setup-node@v2.1.2
+      uses: actions/checkout@v4
+    - uses: actions/setup-node@v4
       timeout-minutes: 1
       with:
-        node-version: 14
-    - name: update to npm v7
-      run: npm i -g npm@7
+        node-version: 18
+    - name: update to npm v8
+      run: npm i -g npm@8
+    - name: Setup cmake
+      uses: jwlawson/actions-setup-cmake@v2.0.2
+      with:
+        cmake-version: '3.22.6'
+    - name: dump node version
+      id: node_ver
+      run: |
+        export node_ver="$(node --version)"
+        echo "node_version=$node_ver" >> $GITHUB_OUTPUT
+        echo "node_version=$node_ver"
+      shell: bash
+    - name: node_modules-useCache
+      uses: actions/cache@v4
+      id: node_cache
+      with:
+        path: node_modules
+        key: node-${{ runner.os }}-18-${{ steps.node_ver.outputs.node_version }}-${{ hashFiles('**/package-lock.json') }}-0
+        restore-keys: node-${{ runner.os }}-18-${{ steps.node_ver.outputs.node_version }}-${{ hashFiles('**/package-lock.json') }}-
+    - name: npm info
+      if: steps.node_cache.outputs.cache-hit != 'true'
+      id: npm_info
+      run: |
+        npm --version
+        echo "temp_npm_cachedir=$(npm config get cache)" >> $GITHUB_OUTPUT
+    - name: use npm cache
+      if: steps.node_cache.outputs.cache-hit != 'true'
+      uses: actions/cache@v4
+      id: npm_cache
+      with:
+        path: ${{ steps.npm_info.outputs.temp_npm_cachedir }}
+        key: npm-${{ runner.os }}-18-${{ steps.node_ver.outputs.node_version }}-0
+        restore-keys: |
+          npm-${{ runner.os }}-18-${{ steps.node_ver.outputs.node_version }}-
+    - name: npm_install
+      if: steps.node_cache.outputs.cache-hit != 'true'
+      env:
+        CFDJS_UNUSE_ASSET: true
+      run: |
+        npm set progress=false
+        npm ci
     - name: output url
       id: get_url
-      run: echo "::set-output name=upload_url::${{ needs.create_releases.outputs.release_url }}"
+      run: echo "upload_url=${{ needs.create_releases.outputs.release_url }}" >> $GITHUB_OUTPUT
     - name: Get the version
       id: get_version
-      run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
+      run: echo "VERSION=${GITHUB_REF/refs\/tags\//}" >> $GITHUB_OUTPUT
       shell: bash
     - name: dump version
       env:
@@ -103,40 +145,104 @@ jobs:
         echo "---- dump zip file ----"
         dir .
     - name: Upload Release Asset
-      id: upload-release-asset 
-      uses: actions/upload-release-asset@v1.0.1
+      uses: softprops/action-gh-release@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        upload_url: ${{ steps.get_url.outputs.upload_url }}
-        asset_path: ./cfd.zip
-        asset_name: cfdjs-api-${{ steps.get_version.outputs.VERSION }}-win-vs2019-x86_64.zip
-        asset_content_type: application/zip
+        tag_name: ${{ steps.get_version.outputs.VERSION }}
+        files: ./cfd.zip
+        name: cfdjs-api-${{ steps.get_version.outputs.VERSION }}-win-vs2019-x86_64.zip
     - name: cleanup
       run: rm -rf build
       shell: bash
-    - name: npm install
-      run: npm install
-      timeout-minutes: 20
+    - name: ensure cmake-js
+      run: |
+        npm list cmake-js
+        npx cmake-js --version
+      shell: bash
     - name: prebuild
-      run: npm run prebuild_napi
+      run: npm run prebuild_napi_win
     - name: prebuild upload
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: npm run prebuild_upload_all -- ${GITHUB_TOKEN}
       shell: bash
+    - name: after_job
+      run: rm -rf node_modules/cfd-js
+      shell: bash
 
   upload-object-ubuntu:
     name: upload-object-ubuntu
     needs: create_releases
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-22.04
+    container:
+      image: node:18
+      options: --user root
+    timeout-minutes: 50
 
     steps:
     - name: checkout
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
+    - name: Fix workspace permissions
+      run: |
+        chown -R root:root $GITHUB_WORKSPACE
+        chmod -R 755 $GITHUB_WORKSPACE
+        mkdir -p external
+        chmod 755 external
+    - name: Install system dependencies
+      run: |
+        apt-get update
+        apt-get install -y zip
+    - name: Setup cmake
+      uses: jwlawson/actions-setup-cmake@v2.0.2
+      with:
+        cmake-version: '3.22.6'
+    - uses: actions/setup-node@v4
+      timeout-minutes: 1
+      with:
+        node-version: 18
+    - name: update to npm v8
+      run: npm i -g npm@8
+    - name: dump node version
+      id: node_ver
+      run: |
+        export node_ver="$(node --version)"
+        echo "node_version=$node_ver" >> $GITHUB_OUTPUT
+        echo "node_version=$node_ver"
+      shell: bash
+    - name: node_modules-useCache
+      uses: actions/cache@v4
+      id: node_cache
+      with:
+        path: node_modules
+        key: node-${{ runner.os }}-18-${{ steps.node_ver.outputs.node_version }}-${{ hashFiles('**/package-lock.json') }}-0
+        restore-keys: node-${{ runner.os }}-18-${{ steps.node_ver.outputs.node_version }}-${{ hashFiles('**/package-lock.json') }}-
+    - name: npm info
+      if: steps.node_cache.outputs.cache-hit != 'true'
+      id: npm_info
+      run: |
+        npm --version
+        echo "temp_npm_cachedir=$(npm config get cache)" >> $GITHUB_OUTPUT
+    - name: use npm cache
+      if: steps.node_cache.outputs.cache-hit != 'true'
+      uses: actions/cache@v4
+      id: npm_cache
+      with:
+        path: ${{ steps.npm_info.outputs.temp_npm_cachedir }}
+        key: npm-${{ runner.os }}-18-${{ steps.node_ver.outputs.node_version }}-0
+        restore-keys: |
+          npm-${{ runner.os }}-18-${{ steps.node_ver.outputs.node_version }}-
+    - name: npm_install
+      if: steps.node_cache.outputs.cache-hit != 'true'
+      env:
+        CFDJS_UNUSE_ASSET: true
+      run: |
+        npm set progress=false
+        npm ci
     - name: Get the version
       id: get_version
-      run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
+      run: echo "VERSION=${GITHUB_REF/refs\/tags\//}" >> $GITHUB_OUTPUT
+      shell: bash
     - name: list
       run: ls -a $GITHUB_WORKSPACE
     - name: create folder
@@ -148,15 +254,14 @@ jobs:
       run: |
         cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DENABLE_SHARED=on -DENABLE_CAPI=off -DENABLE_TESTS=off -DTARGET_RPATH="@executable_path;/usr/local/lib;/usr/local/lib64;./node_modules/cfd-js/build/Release;../node_modules/cfd-js/build/Release;../../node_modules/cfd-js/build/Release;../../../node_modules/cfd-js/build/Release;../../../../node_modules/cfd-js/build/Release;../../../../../node_modules/cfd-js/build/Release;../../../../../../node_modules/cfd-js/build/Release;./build/Release;./build/Release;./wrap_js/dl_lib/lib"
         cmake --build build --parallel 4 --config Release
-        cd ../..
       timeout-minutes: 20
     - name: cmake-install
       run: |
         cd build
-        sudo make install DESTDIR=../dist
+        make install DESTDIR=../dist
         cd ..
-        sudo rm -rf dist/usr/local/cmake/wallycore-* dist/usr/local/lib/pkgconfig/wallycore.pc
-        sudo rm -rf dist/usr/local/lib/wallycore.*   dist/usr/local/lib/libwallycore.*
+        rm -rf dist/usr/local/cmake/wallycore-* dist/usr/local/lib/pkgconfig/wallycore.pc
+        rm -rf dist/usr/local/lib/wallycore.*   dist/usr/local/lib/libwallycore.*
     - name: create archive file
       run: |
         cd dist
@@ -165,42 +270,89 @@ jobs:
         ls -l
     - name: output url
       id: get_url
-      run: echo "::set-output name=upload_url::${{ needs.create_releases.outputs.release_url }}"
+      run: echo "upload_url=${{ needs.create_releases.outputs.release_url }}" >> $GITHUB_OUTPUT
     - name: Upload Release Asset
-      id: upload-release-asset 
-      uses: actions/upload-release-asset@v1.0.1
+      uses: softprops/action-gh-release@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        upload_url: ${{ steps.get_url.outputs.upload_url }}
-        asset_path: ./dist/cfd.zip
-        asset_name: cfdjs-api-${{ steps.get_version.outputs.VERSION }}-ubuntu1804-gcc-x86_64.zip
-        asset_content_type: application/zip
-    - name: npm install
-      run: npm install
-      timeout-minutes: 20
+        tag_name: ${{ steps.get_version.outputs.VERSION }}
+        files: ./dist/cfd.zip
+        name: cfdjs-api-${{ steps.get_version.outputs.VERSION }}-ubuntu22-gcc-x86_64.zip
+    - name: cleanup
+      run: rm -rf build
+      shell: bash
+    - name: ensure cmake-js
+      run: |
+        npm list cmake-js
+        npx cmake-js --version
+      shell: bash
     - name: prebuild
       run: npm run prebuild_napi
     - name: prebuild upload
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: npm run prebuild_upload_all -- ${GITHUB_TOKEN}
+      shell: bash
+    - name: after_job
+      run: rm -rf node_modules/cfd-js
+      shell: bash
 
   upload-object-macos:
     name: upload-object-macos
     needs: create_releases
-    runs-on: macos-10.15
+    runs-on: [self-hosted, macos]
+    timeout-minutes: 50
 
     steps:
     - name: checkout
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
+    - uses: actions/setup-node@v4
+      timeout-minutes: 1
+      with:
+        node-version: 18
+    - name: update to npm v8
+      run: npm i -g npm@8
+    - name: dump node version
+      id: node_ver
+      run: |
+        export node_ver="$(node --version)"
+        echo "node_version=$node_ver" >> $GITHUB_OUTPUT
+        echo "node_version=$node_ver"
+      shell: bash
+    - name: node_modules-useCache
+      uses: actions/cache@v4
+      id: node_cache
+      with:
+        path: node_modules
+        key: node-${{ runner.os }}-18-${{ steps.node_ver.outputs.node_version }}-${{ hashFiles('**/package-lock.json') }}-0
+        restore-keys: node-${{ runner.os }}-18-${{ steps.node_ver.outputs.node_version }}-${{ hashFiles('**/package-lock.json') }}-
+    - name: npm info
+      if: steps.node_cache.outputs.cache-hit != 'true'
+      id: npm_info
+      run: |
+        npm --version
+        echo "temp_npm_cachedir=$(npm config get cache)" >> $GITHUB_OUTPUT
+    - name: use npm cache
+      if: steps.node_cache.outputs.cache-hit != 'true'
+      uses: actions/cache@v4
+      id: npm_cache
+      with:
+        path: ${{ steps.npm_info.outputs.temp_npm_cachedir }}
+        key: npm-${{ runner.os }}-18-${{ steps.node_ver.outputs.node_version }}-0
+        restore-keys: |
+          npm-${{ runner.os }}-18-${{ steps.node_ver.outputs.node_version }}-
+    - name: npm_install
+      if: steps.node_cache.outputs.cache-hit != 'true'
+      env:
+        CFDJS_UNUSE_ASSET: true
+      run: |
+        npm set progress=false
+        npm ci
     - name: Get the version
       id: get_version
-      run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
-    - name: Select Xcode version
-      run: sudo xcode-select -s '/Applications/Xcode_${{ env.XCODE_VERSION }}.app/Contents/Developer'
-    - name: Show Xcode version
-      run: xcodebuild -version
+      run: echo "VERSION=${GITHUB_REF/refs\/tags\//}" >> $GITHUB_OUTPUT
+      shell: bash
     - name: list
       run: ls -a $GITHUB_WORKSPACE
     - name: create folder
@@ -212,15 +364,14 @@ jobs:
       run: |
         cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DENABLE_SHARED=off -DENABLE_CAPI=off -DENABLE_TESTS=off -DTARGET_RPATH="@executable_path;/usr/local/lib;/usr/local/lib64;./node_modules/cfd-js/build/Release;../node_modules/cfd-js/build/Release;../../node_modules/cfd-js/build/Release;../../../node_modules/cfd-js/build/Release;../../../../node_modules/cfd-js/build/Release;../../../../../node_modules/cfd-js/build/Release;../../../../../../node_modules/cfd-js/build/Release;./build/Release;./build/Release;./wrap_js/dl_lib/lib"
         cmake --build build --parallel 4 --config Release
-        cd ../..
       timeout-minutes: 30
     - name: cmake-install
       run: |
         cd build
-        sudo make install DESTDIR=../dist
+        make install DESTDIR=../dist
         cd ..
-        sudo rm -rf dist/usr/local/cmake/wallycore-* dist/usr/local/lib/pkgconfig/wallycore.pc
-        sudo rm -rf dist/usr/local/lib/wallycore.*   dist/usr/local/lib/libwallycore.*
+        rm -rf dist/usr/local/cmake/wallycore-* dist/usr/local/lib/pkgconfig/wallycore.pc
+        rm -rf dist/usr/local/lib/wallycore.*   dist/usr/local/lib/libwallycore.*
     - name: create archive file
       run: |
         cd dist
@@ -229,23 +380,30 @@ jobs:
         ls -l
     - name: output url
       id: get_url
-      run: echo "::set-output name=upload_url::${{ needs.create_releases.outputs.release_url }}"
+      run: echo "upload_url=${{ needs.create_releases.outputs.release_url }}" >> $GITHUB_OUTPUT
     - name: Upload Release Asset
-      id: upload-release-asset 
-      uses: actions/upload-release-asset@v1.0.1
+      uses: softprops/action-gh-release@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        upload_url: ${{ steps.get_url.outputs.upload_url }}
-        asset_path: ./dist/cfd.zip
-        asset_name: cfdjs-api-${{ steps.get_version.outputs.VERSION }}-osx-xcode${{ env.XCODE_VERSION }}-x86_64.zip
-        asset_content_type: application/zip
-    - name: npm install
-      run: npm install
-      timeout-minutes: 20
+        tag_name: ${{ steps.get_version.outputs.VERSION }}
+        files: ./dist/cfd.zip
+        name: cfdjs-api-${{ steps.get_version.outputs.VERSION }}-osx-arm64.zip
+    - name: cleanup
+      run: rm -rf build
+      shell: bash
+    - name: ensure cmake-js
+      run: |
+        npm list cmake-js
+        npx cmake-js --version
+      shell: bash
     - name: prebuild
       run: npm run prebuild_napi
     - name: prebuild upload
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: npm run prebuild_upload_all -- ${GITHUB_TOKEN}
+      shell: bash
+    - name: after_job
+      run: rm -rf node_modules/cfd-js
+      shell: bash

@@ -1,10 +1,10 @@
 {
   "name": "cfd-js",
-  "version": "0.4.1",
-  "domain": "cryptogarageinc",
+  "version": "0.4.11",
+  "domain": "atomicfinance",
   "repository": {
     "type": "git",
-    "url": "https://github.com/cryptogarageinc/cfd-js.git"
+    "url": "https://github.com/atomicfinance/cfd-js.git"
   },
   "description": "Crypto Finance Development Kit for JavaScript.",
   "author": "Crypto Garage",
@@ -38,6 +38,7 @@
     "prebuild_nodejs": "./tools/prebuild_nodejs.sh",
     "prebuild_electron": "./tools/prebuild_electron.sh",
     "prebuild_napi": "prebuild --backend cmake-js -r napi --verbose --include-regex \".*(node|a|so|dll|dylib)$\" --  -O build --CDENABLE_SHARED=off --CDENABLE_CAPI=off --CDENABLE_JSONAPI=off --CDENABLE_TESTS=off --CDENABLE_JS_WRAPPER=off --CDTARGET_RPATH=\"@executable_path;/usr/local/lib;/usr/local/lib64;\\$\\$ORIGIN/node_modules/cfd-js/build/Release;\\$ORIGIN/node_modules/cfd-js/build/Release;\\$ORIGIN/../node_modules/cfd-js/build/Release;\\$ORIGIN/../../node_modules/cfd-js/build/Release;\\$ORIGIN/../../../node_modules/cfd-js/build/Release;\\$ORIGIN/../../../../node_modules/cfd-js/build/Release;\\$ORIGIN/../../../../../node_modules/cfd-js/build/Release;\\$ORIGIN/../../../../../../node_modules/cfd-js/build/Release;\\$ORIGIN/build/Release;\\$ORIGIN/wrap_js/dl_lib/lib\" -C",
+    "prebuild_napi_win": "prebuild --backend cmake-js -r napi --verbose --include-regex \".*(node|a|so|dll|dylib)$\" --  -O build --CDENABLE_SHARED=off --CDENABLE_CAPI=off --CDENABLE_JSONAPI=off --CDENABLE_TESTS=off --CDENABLE_JS_WRAPPER=off",
     "prebuild_upload_all": "prebuild --upload-all",
     "check_version": "node ./tools/checker.js version",
     "download_object": "node ./pkg_getter.js",
