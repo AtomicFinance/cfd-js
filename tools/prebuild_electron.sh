@@ -1,14 +1,19 @@
 #!/bin/bash
 
+# Clean build artifacts to ensure fresh build
+echo "Cleaning build artifacts..."
+rm -rf build
+rm -rf wrap_js/dl_lib
+
 # Prebuild for Electron runtime
 prebuild \
   --backend cmake-js \
-  -t 12.0.0-beta.1 \
-  -t 11.0.0-beta.11 \
-  -t 10.0.0-beta.1 \
-  -t 9.0.0 \
-  -t 8.0.0 \
-  -t 7.0.0 \
+  -t 36.0.0 \
+  -t 35.0.0 \
+  -t 34.0.0 \
+  -t 33.0.0 \
+  -t 32.0.0 \
+  -t 31.0.0 \
   -r electron \
   --verbose \
   --include-regex ".*(node|a|so|dll|dylib)$" \
@@ -20,4 +25,4 @@ prebuild \
   --CDENABLE_TESTS=off \
   --CDENABLE_JS_WRAPPER=off \
   --CDTARGET_RPATH="@executable_path;/usr/local/lib;/usr/local/lib64;\$\$ORIGIN/node_modules/cfd-js/build/Release;\$ORIGIN/node_modules/cfd-js/build/Release;\$ORIGIN/../node_modules/cfd-js/build/Release;\$ORIGIN/../../node_modules/cfd-js/build/Release;\$ORIGIN/../../../node_modules/cfd-js/build/Release;\$ORIGIN/../../../../node_modules/cfd-js/build/Release;\$ORIGIN/../../../../../node_modules/cfd-js/build/Release;\$ORIGIN/../../../../../../node_modules/cfd-js/build/Release;\$ORIGIN/build/Release;\$ORIGIN/wrap_js/dl_lib/lib" \
-  -C 
+  -C
