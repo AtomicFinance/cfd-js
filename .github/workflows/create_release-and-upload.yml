@@ -162,6 +162,7 @@ jobs:
       shell: bash
     - name: prebuild nodejs
       run: npm run prebuild_nodejs
+      shell: bash
     - name: prebuild napi
       run: npm run prebuild_napi_win
     - name: prebuild upload
