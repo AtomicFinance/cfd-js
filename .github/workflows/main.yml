@@ -20,7 +20,7 @@ jobs:
       options: --user root
     timeout-minutes: 50
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
     - name: Fix workspace permissions
       run: |
         chown -R root:root $GITHUB_WORKSPACE
@@ -94,7 +94,7 @@ jobs:
     runs-on: [self-hosted, macos]
     timeout-minutes: 50
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
     - uses: actions/setup-node@v2
       timeout-minutes: 1
       with:
@@ -159,7 +159,7 @@ jobs:
     runs-on: windows-2019
     timeout-minutes: 50
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
     - uses: actions/setup-node@v2
       timeout-minutes: 1
       with:
@@ -224,7 +224,7 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
     - name: checkout
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
     - name: Login GitHub Registry
       run: docker login docker.pkg.github.com -u owner -p ${{ secrets.GITHUB_TOKEN }}
     - name: Pull image from GitHub Registry
@@ -238,7 +238,7 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
     - name: checkout
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
     - name: Login GitHub Registry
       run: docker login docker.pkg.github.com -u owner -p ${{ secrets.GITHUB_TOKEN }}
     - name: Pull image from GitHub Registry
@@ -251,7 +251,7 @@ jobs:
     name: doxygen-ubuntu
     runs-on: ubuntu-22.04
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
     - name: install_doxygen
       run: sudo apt install doxygen graphviz
     - name: doxygen_check
