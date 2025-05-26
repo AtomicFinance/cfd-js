@@ -1,0 +1,67 @@
+version: 2
+updates:
+  # Enable version updates for npm
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "daily"
+      time: "09:00"
+    open-pull-requests-limit: 10
+    reviewers:
+      - "AtomicFinance/cfd-js-maintainers"
+    assignees:
+      - "AtomicFinance/cfd-js-maintainers"
+    commit-message:
+      prefix: "npm"
+      include: "scope"
+    # Group minor and patch updates together
+    groups:
+      development-dependencies:
+        patterns:
+          - "@types/*"
+          - "@typescript-eslint/*"
+          - "eslint*"
+          - "jest*"
+          - "ts-*"
+          - "typescript"
+        update-types:
+          - "minor"
+          - "patch"
+      build-dependencies:
+        patterns:
+          - "cmake-js"
+          - "prebuild*"
+          - "node-addon-api"
+        update-types:
+          - "minor"
+          - "patch"
+
+  # Enable version updates for GitHub Actions
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "daily"
+      time: "09:00"
+    open-pull-requests-limit: 5
+    reviewers:
+      - "AtomicFinance/cfd-js-maintainers"
+    assignees:
+      - "AtomicFinance/cfd-js-maintainers"
+    commit-message:
+      prefix: "ci"
+      include: "scope"
+
+  # Enable version updates for Docker
+  - package-ecosystem: "docker"
+    directory: "/"
+    schedule:
+      interval: "daily"
+      time: "09:00"
+    open-pull-requests-limit: 5
+    reviewers:
+      - "AtomicFinance/cfd-js-maintainers"
+    assignees:
+      - "AtomicFinance/cfd-js-maintainers"
+    commit-message:
+      prefix: "docker"
+      include: "scope"
