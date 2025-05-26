@@ -34,7 +34,7 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         tag_name: ${{ github.ref }}
-        name: Release ${{ github.ref }}
+        name: ${{ steps.get_version.outputs.VERSION }}
         body: |
           Changes in this Release
           - Fixed CI/CD pipeline issues
@@ -79,6 +79,12 @@ jobs:
         echo "node_version=$node_ver" >> $GITHUB_OUTPUT
         echo "node_version=$node_ver"
       shell: bash
+    - name: npm info
+      id: npm_info
+      run: |
+        $cacheDir = npm config get cache
+        echo "temp_npm_cachedir=$cacheDir" >> $env:GITHUB_OUTPUT
+      shell: pwsh
     - name: node_modules-useCache
       uses: actions/cache@v4
       id: node_cache
@@ -86,12 +92,6 @@ jobs:
         path: node_modules
         key: node-${{ runner.os }}-18-${{ steps.node_ver.outputs.node_version }}-${{ hashFiles('**/package-lock.json') }}-0
         restore-keys: node-${{ runner.os }}-18-${{ steps.node_ver.outputs.node_version }}-${{ hashFiles('**/package-lock.json') }}-
-    - name: npm info
-      if: steps.node_cache.outputs.cache-hit != 'true'
-      id: npm_info
-      run: |
-        npm --version
-        echo "temp_npm_cachedir=$(npm config get cache)" >> $GITHUB_OUTPUT
     - name: use npm cache
       if: steps.node_cache.outputs.cache-hit != 'true'
       uses: actions/cache@v4
@@ -160,7 +160,9 @@ jobs:
         npm list cmake-js
         npx cmake-js --version
       shell: bash
-    - name: prebuild
+    - name: prebuild nodejs
+      run: npm run prebuild_nodejs
+    - name: prebuild napi
       run: npm run prebuild_napi_win
     - name: prebuild upload
       env:
@@ -210,6 +212,11 @@ jobs:
         echo "node_version=$node_ver" >> $GITHUB_OUTPUT
         echo "node_version=$node_ver"
       shell: bash
+    - name: npm info
+      id: npm_info
+      run: |
+        npm --version
+        echo "temp_npm_cachedir=$(npm config get cache)" >> $GITHUB_OUTPUT
     - name: node_modules-useCache
       uses: actions/cache@v4
       id: node_cache
@@ -217,12 +224,6 @@ jobs:
         path: node_modules
         key: node-${{ runner.os }}-18-${{ steps.node_ver.outputs.node_version }}-${{ hashFiles('**/package-lock.json') }}-0
         restore-keys: node-${{ runner.os }}-18-${{ steps.node_ver.outputs.node_version }}-${{ hashFiles('**/package-lock.json') }}-
-    - name: npm info
-      if: steps.node_cache.outputs.cache-hit != 'true'
-      id: npm_info
-      run: |
-        npm --version
-        echo "temp_npm_cachedir=$(npm config get cache)" >> $GITHUB_OUTPUT
     - name: use npm cache
       if: steps.node_cache.outputs.cache-hit != 'true'
       uses: actions/cache@v4
@@ -287,7 +288,9 @@ jobs:
         npm list cmake-js
         npx cmake-js --version
       shell: bash
-    - name: prebuild
+    - name: prebuild nodejs
+      run: npm run prebuild_nodejs
+    - name: prebuild napi
       run: npm run prebuild_napi
     - name: prebuild upload
       env:
@@ -320,6 +323,11 @@ jobs:
         echo "node_version=$node_ver" >> $GITHUB_OUTPUT
         echo "node_version=$node_ver"
       shell: bash
+    - name: npm info
+      id: npm_info
+      run: |
+        npm --version
+        echo "temp_npm_cachedir=$(npm config get cache)" >> $GITHUB_OUTPUT
     - name: node_modules-useCache
       uses: actions/cache@v4
       id: node_cache
@@ -327,12 +335,6 @@ jobs:
         path: node_modules
         key: node-${{ runner.os }}-18-${{ steps.node_ver.outputs.node_version }}-${{ hashFiles('**/package-lock.json') }}-0
         restore-keys: node-${{ runner.os }}-18-${{ steps.node_ver.outputs.node_version }}-${{ hashFiles('**/package-lock.json') }}-
-    - name: npm info
-      if: steps.node_cache.outputs.cache-hit != 'true'
-      id: npm_info
-      run: |
-        npm --version
-        echo "temp_npm_cachedir=$(npm config get cache)" >> $GITHUB_OUTPUT
     - name: use npm cache
       if: steps.node_cache.outputs.cache-hit != 'true'
       uses: actions/cache@v4
@@ -397,7 +399,9 @@ jobs:
         npm list cmake-js
         npx cmake-js --version
       shell: bash
-    - name: prebuild
+    - name: prebuild nodejs
+      run: npm run prebuild_nodejs
+    - name: prebuild napi
       run: npm run prebuild_napi
     - name: prebuild upload
       env:
