@@ -170,7 +170,7 @@
     "@types/node": "^17.0.25",
     "bindings": "^1.5.0",
     "cmake-js": "https://github.com/cryptogarageinc/cmake-js#semver:^6.3.1",
-    "del-cli": "^4.0.1",
+    "del-cli": "^6.0.0",
     "got": "^11.8.2",
     "needle": "^3.1.0",
     "node-addon-api": "^4.1.0",
