@@ -20,7 +20,7 @@ jobs:
       options: --user root
     timeout-minutes: 50
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
     - name: Fix workspace permissions
       run: |
         chown -R root:root $GITHUB_WORKSPACE
@@ -31,7 +31,7 @@ jobs:
       uses: jwlawson/actions-setup-cmake@v2.0.2
       with:
         cmake-version: '3.22.6'
-    - uses: actions/setup-node@v2
+    - uses: actions/setup-node@v4
       timeout-minutes: 1
       with:
         node-version: 18
@@ -41,7 +41,7 @@ jobs:
       id: node_ver
       run: |
         export node_ver="$(node --version)"
-        echo "::set-output name=node_version::$node_ver"
+        echo "node_version=$node_ver" >> $GITHUB_OUTPUT
         echo "node_version=$node_ver"
       shell: bash
     - name: node_modules-useCache
@@ -56,7 +56,7 @@ jobs:
       id: npm_info
       run: |
         npm --version
-        echo "::set-output name=temp_npm_cachedir::$(npm config get cache)"
+        echo "temp_npm_cachedir=$(npm config get cache)" >> $GITHUB_OUTPUT
     - name: use npm cache
       if: steps.node_cache.outputs.cache-hit != 'true'
       uses: actions/cache@v4
@@ -94,8 +94,8 @@ jobs:
     runs-on: [self-hosted, macos]
     timeout-minutes: 50
     steps:
-    - uses: actions/checkout@v2
-    - uses: actions/setup-node@v2
+    - uses: actions/checkout@v4
+    - uses: actions/setup-node@v4
       timeout-minutes: 1
       with:
         node-version: 18
@@ -105,7 +105,7 @@ jobs:
       id: node_ver
       run: |
         export node_ver="$(node --version)"
-        echo "::set-output name=node_version::$node_ver"
+        echo "node_version=$node_ver" >> $GITHUB_OUTPUT
         echo "node_version=$node_ver"
       shell: bash
     - name: node_modules-useCache
@@ -120,7 +120,7 @@ jobs:
       id: npm_info
       run: |
         npm --version
-        echo "::set-output name=temp_npm_cachedir::$(npm config get cache)"
+        echo "temp_npm_cachedir=$(npm config get cache)" >> $GITHUB_OUTPUT
     - name: use npm cache
       if: steps.node_cache.outputs.cache-hit != 'true'
       uses: actions/cache@v4
@@ -159,8 +159,8 @@ jobs:
     runs-on: windows-2019
     timeout-minutes: 50
     steps:
-    - uses: actions/checkout@v2
-    - uses: actions/setup-node@v2
+    - uses: actions/checkout@v4
+    - uses: actions/setup-node@v4
       timeout-minutes: 1
       with:
         node-version: 18
@@ -170,7 +170,7 @@ jobs:
       id: node_ver
       run: |
         export node_ver="$(node --version)"
-        echo "::set-output name=node_version::$node_ver"
+        echo "node_version=$node_ver" >> $GITHUB_OUTPUT
         echo "node_version=$node_ver"
       shell: bash
     - name: node_modules-useCache
@@ -185,7 +185,7 @@ jobs:
       id: npm_info
       run: |
         npm --version
-        echo "::set-output name=temp_npm_cachedir::$(npm config get cache)"
+        echo "temp_npm_cachedir=$(npm config get cache)" >> $GITHUB_OUTPUT
     - name: use npm cache
       if: steps.node_cache.outputs.cache-hit != 'true'
       uses: actions/cache@v4
@@ -224,7 +224,7 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
     - name: checkout
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
     - name: Login GitHub Registry
       run: docker login docker.pkg.github.com -u owner -p ${{ secrets.GITHUB_TOKEN }}
     - name: Pull image from GitHub Registry
@@ -238,7 +238,7 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
     - name: checkout
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
     - name: Login GitHub Registry
       run: docker login docker.pkg.github.com -u owner -p ${{ secrets.GITHUB_TOKEN }}
     - name: Pull image from GitHub Registry
@@ -251,41 +251,10 @@ jobs:
     name: doxygen-ubuntu
     runs-on: ubuntu-22.04
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
     - name: install_doxygen
       run: sudo apt install doxygen graphviz
     - name: doxygen_check
       run: |
         cd doc
         doxygen Doxyfile_quiet_all
-
-  analyze-CodeQL:
-    name: CodeQL
-    runs-on: ubuntu-22.04
-    timeout-minutes: 360
-    strategy:
-      fail-fast: false
-      matrix:
-        language: ['cpp', 'javascript']
-    steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
-      with:
-        fetch-depth: 2
-    - name: Initialize CodeQL
-      uses: github/codeql-action/init@v3
-      with:
-        languages: ${{ matrix.language }}
-    - name: Autobuild
-      if: matrix.language == 'javascript'
-      uses: github/codeql-action/autobuild@v3
-    - name: Manual Build
-      if: matrix.language != 'javascript'
-      env:
-        CFDJS_UNUSE_ASSET: true
-      run: |
-        npm set progress=false
-        npm ci
-        npm run cmake_release_parallel
-    - name: Perform CodeQL Analysis
-      uses: github/codeql-action/analyze@v3
