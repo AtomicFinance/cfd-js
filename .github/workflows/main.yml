@@ -31,7 +31,7 @@ jobs:
       uses: jwlawson/actions-setup-cmake@v2.0.2
       with:
         cmake-version: '3.22.6'
-    - uses: actions/setup-node@v2
+    - uses: actions/setup-node@v4
       timeout-minutes: 1
       with:
         node-version: 18
@@ -95,7 +95,7 @@ jobs:
     timeout-minutes: 50
     steps:
     - uses: actions/checkout@v2
-    - uses: actions/setup-node@v2
+    - uses: actions/setup-node@v4
       timeout-minutes: 1
       with:
         node-version: 18
@@ -160,7 +160,7 @@ jobs:
     timeout-minutes: 50
     steps:
     - uses: actions/checkout@v2
-    - uses: actions/setup-node@v2
+    - uses: actions/setup-node@v4
       timeout-minutes: 1
       with:
         node-version: 18
