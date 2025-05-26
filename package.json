@@ -183,7 +183,7 @@
     "@types/jest": "^27.4.1",
     "@typescript-eslint/eslint-plugin": "^5.20.0",
     "@typescript-eslint/parser": "^5.20.0",
-    "eslint": "^8.13.0",
+    "eslint": "^9.27.0",
     "eslint-config-google": "^0.14.0",
     "jest": "^27.1.1",
     "prebuild": "https://github.com/cryptogarageinc/prebuild#semver:^11.0.1",
