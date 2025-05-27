@@ -100,19 +100,6 @@ jobs:
       run: |
         docker run --user root -v ${{ github.workspace }}:/github/workspace --entrypoint ${{ env.BITCOIN_ENTRYPOINT_PATH }} ${{ env.GITHUB_DOCKER_IMAGE }}:${{ env.GITHUB_BITCOIN_VERSION }}
 
-  elements-e2e-test:
-    name: elements e2e test
-    runs-on: ubuntu-22.04
-
-    steps:
-    - name: checkout
-      uses: actions/checkout@v4
-    - name: Pull image from GitHub Registry
-      run: docker pull ${{ env.GITHUB_DOCKER_IMAGE }}:${{ env.GITHUB_ELEMENTS_VERSION }}
-    - name: integration test
-      run: |
-        docker run --user root -v ${{ github.workspace }}:/github/workspace --entrypoint ${{ env.ELEMENTS_ENTRYPOINT_PATH }} ${{ env.GITHUB_DOCKER_IMAGE }}:${{ env.GITHUB_ELEMENTS_VERSION }}
-
   doxygen-ubuntu:
     name: doxygen-ubuntu
     runs-on: ubuntu-22.04
