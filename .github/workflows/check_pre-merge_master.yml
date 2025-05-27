@@ -12,10 +12,10 @@ on:
 
 env:
   CMAKE_BUILD_PARALLEL_LEVEL: 4
-  IMAGE_NODE_VERSION: 14
-  GITHUB_ELEMENTS_VERSION: v0.0.10
-  GITHUB_BITCOIN_VERSION: v0.0.10
-  GITHUB_DOCKER_IMAGE: docker.pkg.github.com/cryptogarageinc/elements-testing-dockerfile/elements-testing
+  IMAGE_NODE_VERSION: 18
+  GITHUB_ELEMENTS_VERSION: v0.2.7
+  GITHUB_BITCOIN_VERSION: v0.2.7
+  GITHUB_DOCKER_IMAGE: ghcr.io/cryptogarageinc/elements-testing
   ELEMENTS_ENTRYPOINT_PATH: /github/workspace/.github/workflows/docker/test_entrypoint.sh
   BITCOIN_ENTRYPOINT_PATH: /github/workspace/.github/workflows/docker/test_bitcoin_entrypoint.sh
 
@@ -26,54 +26,44 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [macos-10.15, windows-2019, ubuntu-18.04]
-        node: [12, 14, 16]
-        include:
-          - node: 12
-            always: false
-          - node: 14
-            always: false
-          - node: 16
-            always: true
+        os: [windows-latest, ubuntu-22.04, self-hosted]
 
     steps:
-    - uses: actions/checkout@v2
-    - uses: actions/setup-node@v2
+    - uses: actions/checkout@v4
+    - uses: actions/setup-node@v4
       timeout-minutes: 1
       with:
-        node-version: ${{ matrix.node }}
-    - name: update to npm v7
-      if: runner.os == 'Windows' || matrix.node == '16'
-      run: npm i -g npm@7
+        node-version: 18
+        cache: 'npm'
     - name: dump node version
       id: node_ver
       run: |
         export node_ver="$(node --version)"
-        echo "::set-output name=node_version::$node_ver"
+        echo "node_version=$node_ver" >> $GITHUB_OUTPUT
         echo "node_version=$node_ver"
       shell: bash
     - name: node_modules-useCache
-      uses: actions/cache@v1
+      uses: actions/cache@v4
       id: node_cache
       with:
         path: node_modules
-        key: node-${{ runner.os }}-${{ matrix.node }}-${{ steps.node_ver.outputs.node_version }}-${{ hashFiles('**/package-lock.json') }}
-        restore-keys: node-${{ runner.os }}-${{ matrix.node }}-${{ steps.node_ver.outputs.node_version }}-${{ hashFiles('**/package-lock.json') }}
+        key: node-${{ runner.os }}-18-${{ steps.node_ver.outputs.node_version }}-${{ hashFiles('**/package-lock.json') }}
+        restore-keys: node-${{ runner.os }}-18-${{ steps.node_ver.outputs.node_version }}-${{ hashFiles('**/package-lock.json') }}
     - name: npm info
       if: steps.node_cache.outputs.cache-hit != 'true'
       id: npm_info
       run: |
         npm --version
-        echo "::set-output name=temp_npm_cachedir::$(npm config get cache)"
+        echo "temp_npm_cachedir=$(npm config get cache)" >> $GITHUB_OUTPUT
     - name: use npm cache
       if: runner.os != 'Windows' && steps.node_cache.outputs.cache-hit != 'true'
-      uses: actions/cache@v1
+      uses: actions/cache@v4
       id: npm_cache
       with:
         path: ${{ steps.npm_info.outputs.temp_npm_cachedir }}
-        key: npm-${{ runner.os }}-${{ matrix.node }}-${{ steps.node_ver.outputs.node_version }}-0
+        key: npm-${{ runner.os }}-18-${{ steps.node_ver.outputs.node_version }}-0
         restore-keys: |
-          npm-${{ runner.os }}-${{ matrix.node }}-${{ steps.node_ver.outputs.node_version }}-
+          npm-${{ runner.os }}-18-${{ steps.node_ver.outputs.node_version }}-
     - name: npm_install
       if: steps.node_cache.outputs.cache-hit != 'true'
       env:
@@ -82,7 +72,6 @@ jobs:
         npm set progress=false
         npm ci
     - name: build
-      if: steps.node_cache.outputs.cache-hit == 'true' || ${{ matrix.always }} == 'true'
       run: npm run cmake_release_parallel
     - name: test_all
       run: npm run test
@@ -100,40 +89,36 @@ jobs:
 
   bitcoin-e2e-test:
     name: bitcoin e2e test
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-22.04
 
     steps:
     - name: checkout
-      uses: actions/checkout@v2
-    - name: Login GitHub Registry
-      run: docker login docker.pkg.github.com -u owner -p ${{ secrets.GITHUB_TOKEN }}
+      uses: actions/checkout@v4
     - name: Pull image from GitHub Registry
       run: docker pull ${{ env.GITHUB_DOCKER_IMAGE }}:${{ env.GITHUB_BITCOIN_VERSION }}
     - name: integration test
       run: |
-        docker run -v ${{ github.workspace }}:/github/workspace --entrypoint ${{ env.BITCOIN_ENTRYPOINT_PATH }} ${{ env.GITHUB_DOCKER_IMAGE }}:${{ env.GITHUB_BITCOIN_VERSION }}
+        docker run --user root -v ${{ github.workspace }}:/github/workspace --entrypoint ${{ env.BITCOIN_ENTRYPOINT_PATH }} ${{ env.GITHUB_DOCKER_IMAGE }}:${{ env.GITHUB_BITCOIN_VERSION }}
 
   elements-e2e-test:
     name: elements e2e test
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-22.04
 
     steps:
     - name: checkout
-      uses: actions/checkout@v2
-    - name: Login GitHub Registry
-      run: docker login docker.pkg.github.com -u owner -p ${{ secrets.GITHUB_TOKEN }}
+      uses: actions/checkout@v4
     - name: Pull image from GitHub Registry
       run: docker pull ${{ env.GITHUB_DOCKER_IMAGE }}:${{ env.GITHUB_ELEMENTS_VERSION }}
     - name: integration test
       run: |
-        docker run -v ${{ github.workspace }}:/github/workspace --entrypoint ${{ env.ELEMENTS_ENTRYPOINT_PATH }} ${{ env.GITHUB_DOCKER_IMAGE }}:${{ env.GITHUB_ELEMENTS_VERSION }}
+        docker run --user root -v ${{ github.workspace }}:/github/workspace --entrypoint ${{ env.ELEMENTS_ENTRYPOINT_PATH }} ${{ env.GITHUB_DOCKER_IMAGE }}:${{ env.GITHUB_ELEMENTS_VERSION }}
 
   doxygen-ubuntu:
     name: doxygen-ubuntu
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-22.04
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
     - name: install_doxygen
       run: sudo apt install doxygen graphviz
     - name: doxygen_check

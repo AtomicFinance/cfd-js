@@ -6,21 +6,21 @@ on:
     - 'v*'
 
 env:
-  XCODE_VERSION: 10.3
+  XCODE_VERSION: 14.3
 
 jobs:
   create_releases:
     name: create-releases
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-22.04
     outputs:
       release_url: ${{ steps.output_url.outputs.upload_url }}
 
     steps:
     - name: checkout
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
     - name: Get the version
       id: get_version
-      run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
+      run: echo "VERSION=${GITHUB_REF/refs\/tags\//}" >> $GITHUB_OUTPUT
       shell: bash
     - name: check package.json version
       env:
@@ -44,34 +44,33 @@ jobs:
     - name: Get release
       if: steps.create_release.outcome == 'failure'
       id: get_release
-      uses: bruceadams/get-release@v1.2.0
+      uses: bruceadams/get-release@v1.3.2
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     - name: output url
       id: output_url
       run: |
-        echo "::set-output name=upload_url::${{steps.get_release.outputs.upload_url}}${{steps.create_release.outputs.upload_url}}"
+        echo "upload_url=${{steps.get_release.outputs.upload_url}}${{steps.create_release.outputs.upload_url}}" >> $GITHUB_OUTPUT
 
-  upload-object-windows-vs2019:
-    name: upload-object-win-vs2019
+  upload-object-windows-vs2022:
+    name: upload-object-win-vs2022
     needs: create_releases
-    runs-on: windows-2019
+    runs-on: windows-latest
 
     steps:
     - name: checkout
-      uses: actions/checkout@v2
-    - uses: actions/setup-node@v2.1.2
+      uses: actions/checkout@v4
+    - uses: actions/setup-node@v4
       timeout-minutes: 1
       with:
-        node-version: 14
-    - name: update to npm v7
-      run: npm i -g npm@7
+        node-version: 18
+        cache: 'npm'
     - name: output url
       id: get_url
-      run: echo "::set-output name=upload_url::${{ needs.create_releases.outputs.release_url }}"
+      run: echo "upload_url=${{ needs.create_releases.outputs.release_url }}" >> $GITHUB_OUTPUT
     - name: Get the version
       id: get_version
-      run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
+      run: echo "VERSION=${GITHUB_REF/refs\/tags\//}" >> $GITHUB_OUTPUT
       shell: bash
     - name: dump version
       env:
@@ -104,13 +103,13 @@ jobs:
         dir .
     - name: Upload Release Asset
       id: upload-release-asset 
-      uses: actions/upload-release-asset@v1.0.1
+      uses: actions/upload-release-asset@v1.0.2
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.get_url.outputs.upload_url }}
         asset_path: ./cfd.zip
-        asset_name: cfdjs-api-${{ steps.get_version.outputs.VERSION }}-win-vs2019-x86_64.zip
+        asset_name: cfdjs-api-${{ steps.get_version.outputs.VERSION }}-win-vs2022-x86_64.zip
         asset_content_type: application/zip
     - name: cleanup
       run: rm -rf build
@@ -129,14 +128,14 @@ jobs:
   upload-object-ubuntu:
     name: upload-object-ubuntu
     needs: create_releases
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-22.04
 
     steps:
     - name: checkout
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
     - name: Get the version
       id: get_version
-      run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
+      run: echo "VERSION=${GITHUB_REF/refs\/tags\//}" >> $GITHUB_OUTPUT
     - name: list
       run: ls -a $GITHUB_WORKSPACE
     - name: create folder
@@ -165,16 +164,16 @@ jobs:
         ls -l
     - name: output url
       id: get_url
-      run: echo "::set-output name=upload_url::${{ needs.create_releases.outputs.release_url }}"
+      run: echo "upload_url=${{ needs.create_releases.outputs.release_url }}" >> $GITHUB_OUTPUT
     - name: Upload Release Asset
       id: upload-release-asset 
-      uses: actions/upload-release-asset@v1.0.1
+      uses: actions/upload-release-asset@v1.0.2
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.get_url.outputs.upload_url }}
         asset_path: ./dist/cfd.zip
-        asset_name: cfdjs-api-${{ steps.get_version.outputs.VERSION }}-ubuntu1804-gcc-x86_64.zip
+        asset_name: cfdjs-api-${{ steps.get_version.outputs.VERSION }}-ubuntu2204-gcc-x86_64.zip
         asset_content_type: application/zip
     - name: npm install
       run: npm install
@@ -186,19 +185,17 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: npm run prebuild_upload_all -- ${GITHUB_TOKEN}
 
-  upload-object-macos:
-    name: upload-object-macos
+  upload-object-macos-self-hosted:
+    name: upload-object-macos-self-hosted
     needs: create_releases
-    runs-on: macos-10.15
+    runs-on: self-hosted
 
     steps:
     - name: checkout
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
     - name: Get the version
       id: get_version
-      run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
-    - name: Select Xcode version
-      run: sudo xcode-select -s '/Applications/Xcode_${{ env.XCODE_VERSION }}.app/Contents/Developer'
+      run: echo "VERSION=${GITHUB_REF/refs\/tags\//}" >> $GITHUB_OUTPUT
     - name: Show Xcode version
       run: xcodebuild -version
     - name: list
@@ -229,16 +226,16 @@ jobs:
         ls -l
     - name: output url
       id: get_url
-      run: echo "::set-output name=upload_url::${{ needs.create_releases.outputs.release_url }}"
+      run: echo "upload_url=${{ needs.create_releases.outputs.release_url }}" >> $GITHUB_OUTPUT
     - name: Upload Release Asset
       id: upload-release-asset 
-      uses: actions/upload-release-asset@v1.0.1
+      uses: actions/upload-release-asset@v1.0.2
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.get_url.outputs.upload_url }}
         asset_path: ./dist/cfd.zip
-        asset_name: cfdjs-api-${{ steps.get_version.outputs.VERSION }}-osx-xcode${{ env.XCODE_VERSION }}-x86_64.zip
+        asset_name: cfdjs-api-${{ steps.get_version.outputs.VERSION }}-osx-self-hosted-x86_64.zip
         asset_content_type: application/zip
     - name: npm install
       run: npm install
