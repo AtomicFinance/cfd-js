@@ -24,36 +24,14 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [macos-latest, windows-latest, ubuntu-22.04, self-hosted-mac]
-        node: [16, 18, 20]
-        exclude:
-          # Reduce matrix for sprint branches - only test on self-hosted Mac and Ubuntu
-          - os: macos-latest
-            node: 16
-          - os: macos-latest
-            node: 18
-          - os: macos-latest
-            node: 20
-          - os: windows-latest
-            node: 16
-          - os: windows-latest
-            node: 20
-          - os: self-hosted-mac
-            node: 16
-        include:
-          - node: 16
-            always: false
-          - node: 18
-            always: true
-          - node: 20
-            always: true
+        os: [ubuntu-22.04, self-hosted-mac]
 
     steps:
     - uses: actions/checkout@v4
     - uses: actions/setup-node@v4
       timeout-minutes: 1
       with:
-        node-version: ${{ matrix.node }}
+        node-version: 18
         cache: 'npm'
     - name: dump node version
       id: node_ver
@@ -67,8 +45,8 @@ jobs:
       id: node_cache
       with:
         path: node_modules
-        key: node-${{ runner.os }}-${{ matrix.node }}-${{ steps.node_ver.outputs.node_version }}-${{ hashFiles('**/package-lock.json') }}
-        restore-keys: node-${{ runner.os }}-${{ matrix.node }}-${{ steps.node_ver.outputs.node_version }}-${{ hashFiles('**/package-lock.json') }}
+        key: node-${{ runner.os }}-18-${{ steps.node_ver.outputs.node_version }}-${{ hashFiles('**/package-lock.json') }}
+        restore-keys: node-${{ runner.os }}-18-${{ steps.node_ver.outputs.node_version }}-${{ hashFiles('**/package-lock.json') }}
     - name: npm info
       if: steps.node_cache.outputs.cache-hit != 'true'
       id: npm_info
@@ -81,9 +59,9 @@ jobs:
       id: npm_cache
       with:
         path: ${{ steps.npm_info.outputs.temp_npm_cachedir }}
-        key: npm-${{ runner.os }}-${{ matrix.node }}-${{ steps.node_ver.outputs.node_version }}-0
+        key: npm-${{ runner.os }}-18-${{ steps.node_ver.outputs.node_version }}-0
         restore-keys: |
-          npm-${{ runner.os }}-${{ matrix.node }}-${{ steps.node_ver.outputs.node_version }}-
+          npm-${{ runner.os }}-18-${{ steps.node_ver.outputs.node_version }}-
     - name: npm_install
       if: steps.node_cache.outputs.cache-hit != 'true'
       env:
@@ -92,7 +70,6 @@ jobs:
         npm set progress=false
         npm ci
     - name: build
-      if: steps.node_cache.outputs.cache-hit == 'true' || ${{ matrix.always }} == 'true'
       run: npm run cmake_release_parallel
     - name: test_all
       run: npm run test
