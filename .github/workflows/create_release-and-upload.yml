@@ -185,74 +185,10 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: npm run prebuild_upload_all -- ${GITHUB_TOKEN}
 
-  upload-object-macos:
-    name: upload-object-macos
-    needs: create_releases
-    runs-on: macos-latest
-
-    steps:
-    - name: checkout
-      uses: actions/checkout@v4
-    - name: Get the version
-      id: get_version
-      run: echo "VERSION=${GITHUB_REF/refs\/tags\//}" >> $GITHUB_OUTPUT
-    - name: Select Xcode version
-      run: sudo xcode-select -s '/Applications/Xcode_${{ env.XCODE_VERSION }}.app/Contents/Developer'
-    - name: Show Xcode version
-      run: xcodebuild -version
-    - name: list
-      run: ls -a $GITHUB_WORKSPACE
-    - name: create folder
-      run: |
-        echo "---- dump output data ----"
-        mkdir dist
-    - name: cmake-build
-      id: cmake_build
-      run: |
-        cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DENABLE_SHARED=off -DENABLE_CAPI=off -DENABLE_TESTS=off -DTARGET_RPATH="@executable_path;/usr/local/lib;/usr/local/lib64;./node_modules/cfd-js/build/Release;../node_modules/cfd-js/build/Release;../../node_modules/cfd-js/build/Release;../../../node_modules/cfd-js/build/Release;../../../../node_modules/cfd-js/build/Release;../../../../../node_modules/cfd-js/build/Release;../../../../../../node_modules/cfd-js/build/Release;./build/Release;./build/Release;./wrap_js/dl_lib/lib"
-        cmake --build build --parallel 4 --config Release
-        cd ../..
-      timeout-minutes: 30
-    - name: cmake-install
-      run: |
-        cd build
-        sudo make install DESTDIR=../dist
-        cd ..
-        sudo rm -rf dist/usr/local/cmake/wallycore-* dist/usr/local/lib/pkgconfig/wallycore.pc
-        sudo rm -rf dist/usr/local/lib/wallycore.*   dist/usr/local/lib/libwallycore.*
-    - name: create archive file
-      run: |
-        cd dist
-        zip -r cfd.zip usr
-        echo "---- dump zip file ----"
-        ls -l
-    - name: output url
-      id: get_url
-      run: echo "upload_url=${{ needs.create_releases.outputs.release_url }}" >> $GITHUB_OUTPUT
-    - name: Upload Release Asset
-      id: upload-release-asset 
-      uses: actions/upload-release-asset@v1.0.2
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.get_url.outputs.upload_url }}
-        asset_path: ./dist/cfd.zip
-        asset_name: cfdjs-api-${{ steps.get_version.outputs.VERSION }}-osx-xcode${{ env.XCODE_VERSION }}-x86_64.zip
-        asset_content_type: application/zip
-    - name: npm install
-      run: npm install
-      timeout-minutes: 20
-    - name: prebuild
-      run: npm run prebuild_napi
-    - name: prebuild upload
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      run: npm run prebuild_upload_all -- ${GITHUB_TOKEN}
-
   upload-object-macos-self-hosted:
     name: upload-object-macos-self-hosted
     needs: create_releases
-    runs-on: self-hosted-mac
+    runs-on: self-hosted
 
     steps:
     - name: checkout
