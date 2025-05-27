@@ -1,10 +1,10 @@
 {
   "name": "cfd-js",
-  "version": "0.3.11",
+  "version": "0.3.12",
   "domain": "cryptogarageinc",
   "repository": {
     "type": "git",
-    "url": "https://github.com/cryptogarageinc/cfd-js.git"
+    "url": "https://github.com/AtomicFinance/cfd-js.git"
   },
   "description": "Crypto Finance Development Kit for JavaScript.",
   "author": "Crypto Garage",
@@ -16,9 +16,9 @@
       3
     ]
   },
-  "homepage": "https://github.com/p2pderivatives/cfd-js",
+  "homepage": "https://github.com/AtomicFinance/cfd-js",
   "bugs": {
-    "url": "https://github.com/p2pderivatives/cfd-js/issues"
+    "url": "https://github.com/AtomicFinance/cfd-js/issues"
   },
   "memo": {
     "abi_url": "https://github.com/lgeiger/node-abi/blob/master/index.js#L51",
@@ -35,10 +35,11 @@
     "prebuild_all_local": "run-s cmake_clean_all download_object prebuild_napi",
     "old_prebuild_all_local": "run-s cmake_clean_all download_object prebuild_all",
     "prebuild_all": "run-s prebuild_nodejs prebuild_electron",
-    "prebuild_nodejs": "prebuild --backend cmake-js -t 15.1.0 -t 14.3.0 -t 12.16.3 -t 10.20.1 -r node --verbose --include-regex \".*(node|a|so|dll|dylib)$\" --  -O build --CDENABLE_SHARED=off --CDENABLE_CAPI=off --CDENABLE_JSONAPI=off --CDENABLE_TESTS=off --CDENABLE_JS_WRAPPER=off --CDTARGET_RPATH=\"@executable_path;/usr/local/lib;/usr/local/lib64;\\$\\$ORIGIN/node_modules/cfd-js/build/Release;\\$ORIGIN/node_modules/cfd-js/build/Release;\\$ORIGIN/../node_modules/cfd-js/build/Release;\\$ORIGIN/../../node_modules/cfd-js/build/Release;\\$ORIGIN/../../../node_modules/cfd-js/build/Release;\\$ORIGIN/../../../../node_modules/cfd-js/build/Release;\\$ORIGIN/../../../../../node_modules/cfd-js/build/Release;\\$ORIGIN/../../../../../../node_modules/cfd-js/build/Release;\\$ORIGIN/build/Release;\\$ORIGIN/wrap_js/dl_lib/lib\" -C",
-    "prebuild_electron": "prebuild --backend cmake-js -t 12.0.0-beta.1 -t 11.0.0-beta.11 -t 10.0.0-beta.1 -t 9.0.0 -t 8.0.0 -t 7.0.0 -r electron --verbose --include-regex \".*(node|a|so|dll|dylib)$\" --  -O build --CDENABLE_SHARED=off --CDENABLE_CAPI=off --CDENABLE_JSONAPI=off --CDENABLE_TESTS=off --CDENABLE_JS_WRAPPER=off --CDTARGET_RPATH=\"@executable_path;/usr/local/lib;/usr/local/lib64;\\$\\$ORIGIN/node_modules/cfd-js/build/Release;\\$ORIGIN/node_modules/cfd-js/build/Release;\\$ORIGIN/../node_modules/cfd-js/build/Release;\\$ORIGIN/../../node_modules/cfd-js/build/Release;\\$ORIGIN/../../../node_modules/cfd-js/build/Release;\\$ORIGIN/../../../../node_modules/cfd-js/build/Release;\\$ORIGIN/../../../../../node_modules/cfd-js/build/Release;\\$ORIGIN/../../../../../../node_modules/cfd-js/build/Release;\\$ORIGIN/build/Release;\\$ORIGIN/wrap_js/dl_lib/lib\" -C",
-    "prebuild_napi": "prebuild --backend cmake-js -r napi --verbose --include-regex \".*(node|a|so|dll|dylib)$\" --  -O build --CDENABLE_SHARED=off --CDENABLE_CAPI=off --CDENABLE_JSONAPI=off --CDENABLE_TESTS=off --CDENABLE_JS_WRAPPER=off --CDTARGET_RPATH=\"@executable_path;/usr/local/lib;/usr/local/lib64;\\$\\$ORIGIN/node_modules/cfd-js/build/Release;\\$ORIGIN/node_modules/cfd-js/build/Release;\\$ORIGIN/../node_modules/cfd-js/build/Release;\\$ORIGIN/../../node_modules/cfd-js/build/Release;\\$ORIGIN/../../../node_modules/cfd-js/build/Release;\\$ORIGIN/../../../../node_modules/cfd-js/build/Release;\\$ORIGIN/../../../../../node_modules/cfd-js/build/Release;\\$ORIGIN/../../../../../../node_modules/cfd-js/build/Release;\\$ORIGIN/build/Release;\\$ORIGIN/wrap_js/dl_lib/lib\" -C",
-    "prebuild_upload_all": "prebuild --upload-all",
+    "prebuild_nodejs": "run-s cmake_clean_build cmake_clean_dl && npx prebuild --backend cmake-js -t 20.18.0 -t 18.18.2 -t 16.20.2 -t 15.1.0 -t 14.3.0 -r node --verbose --include-regex \".*(node|a|so|dll|dylib)$\" -- -O build --CDENABLE_SHARED=off --CDENABLE_CAPI=off --CDENABLE_JSONAPI=off --CDENABLE_TESTS=off --CDENABLE_JS_WRAPPER=off --CDTARGET_RPATH=\"@executable_path;/usr/local/lib;/usr/local/lib64;\\$\\$ORIGIN/node_modules/cfd-js/build/Release;\\$ORIGIN/node_modules/cfd-js/build/Release;\\$ORIGIN/../node_modules/cfd-js/build/Release;\\$ORIGIN/../../node_modules/cfd-js/build/Release;\\$ORIGIN/../../../node_modules/cfd-js/build/Release;\\$ORIGIN/../../../../node_modules/cfd-js/build/Release;\\$ORIGIN/../../../../../node_modules/cfd-js/build/Release;\\$ORIGIN/../../../../../../node_modules/cfd-js/build/Release;\\$ORIGIN/build/Release;\\$ORIGIN/wrap_js/dl_lib/lib\" -C",
+    "prebuild_electron": "run-s cmake_clean_build cmake_clean_dl && npx prebuild --backend cmake-js -t 36.0.0 -t 35.0.0 -t 34.0.0 -t 33.0.0 -t 32.0.0 -t 31.0.0 -r electron --verbose --include-regex \".*(node|a|so|dll|dylib)$\" -- -O build --CDENABLE_SHARED=off --CDENABLE_CAPI=off --CDENABLE_JSONAPI=off --CDENABLE_TESTS=off --CDENABLE_JS_WRAPPER=off --CDTARGET_RPATH=\"@executable_path;/usr/local/lib;/usr/local/lib64;\\$\\$ORIGIN/node_modules/cfd-js/build/Release;\\$ORIGIN/node_modules/cfd-js/build/Release;\\$ORIGIN/../node_modules/cfd-js/build/Release;\\$ORIGIN/../../node_modules/cfd-js/build/Release;\\$ORIGIN/../../../node_modules/cfd-js/build/Release;\\$ORIGIN/../../../../node_modules/cfd-js/build/Release;\\$ORIGIN/../../../../../node_modules/cfd-js/build/Release;\\$ORIGIN/../../../../../../node_modules/cfd-js/build/Release;\\$ORIGIN/build/Release;\\$ORIGIN/wrap_js/dl_lib/lib\" -C",
+    "prebuild_napi": "npx prebuild --backend cmake-js -r napi --verbose --include-regex \".*(node|a|so|dll|dylib)$\" --  -O build --CDENABLE_SHARED=off --CDENABLE_CAPI=off --CDENABLE_JSONAPI=off --CDENABLE_TESTS=off --CDENABLE_JS_WRAPPER=off --CDTARGET_RPATH=\"@executable_path;/usr/local/lib;/usr/local/lib64;\\$\\$ORIGIN/node_modules/cfd-js/build/Release;\\$ORIGIN/node_modules/cfd-js/build/Release;\\$ORIGIN/../node_modules/cfd-js/build/Release;\\$ORIGIN/../../node_modules/cfd-js/build/Release;\\$ORIGIN/../../../node_modules/cfd-js/build/Release;\\$ORIGIN/../../../../node_modules/cfd-js/build/Release;\\$ORIGIN/../../../../../node_modules/cfd-js/build/Release;\\$ORIGIN/../../../../../../node_modules/cfd-js/build/Release;\\$ORIGIN/build/Release;\\$ORIGIN/wrap_js/dl_lib/lib\" -C",
+    "prebuild_napi_win": "npx prebuild --backend cmake-js -r napi --verbose --include-regex \".*(node|a|so|dll|dylib)$\" --  -O build --CDENABLE_SHARED=off --CDENABLE_CAPI=off --CDENABLE_JSONAPI=off --CDENABLE_TESTS=off --CDENABLE_JS_WRAPPER=off",
+    "prebuild_upload_all": "npx prebuild --upload-all",
     "check_version": "node ./tools/checker.js version",
     "download_object": "node ./pkg_getter.js",
     "deploy_object": "node ./pkg_getter.js deployment",
@@ -184,7 +185,7 @@
     "eslint": "^8.8.0",
     "eslint-config-google": "^0.14.0",
     "jest": "^27.1.1",
-    "prebuild": "^11.0.0",
+    "prebuild": "^13.0.1",
     "ts-jest": "^27.0.5",
     "ts-morph": "^13.0.3",
     "ts-node": "^10.2.1",
