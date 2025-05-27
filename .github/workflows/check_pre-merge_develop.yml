@@ -94,8 +94,6 @@ jobs:
     steps:
     - name: checkout
       uses: actions/checkout@v4
-    - name: Login GitHub Registry
-      run: docker login docker.pkg.github.com -u owner -p ${{ secrets.GITHUB_TOKEN }}
     - name: Pull image from GitHub Registry
       run: docker pull ${{ env.GITHUB_DOCKER_IMAGE }}:${{ env.GITHUB_BITCOIN_VERSION }}
     - name: integration test
@@ -109,8 +107,6 @@ jobs:
     steps:
     - name: checkout
       uses: actions/checkout@v4
-    - name: Login GitHub Registry
-      run: docker login docker.pkg.github.com -u owner -p ${{ secrets.GITHUB_TOKEN }}
     - name: Pull image from GitHub Registry
       run: docker pull ${{ env.GITHUB_DOCKER_IMAGE }}:${{ env.GITHUB_ELEMENTS_VERSION }}
     - name: integration test
